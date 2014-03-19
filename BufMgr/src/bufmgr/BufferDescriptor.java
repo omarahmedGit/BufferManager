@@ -13,6 +13,7 @@ public class BufferDescriptor {
 		dirty = false;
 		pageNumber = new PageId();
 	}
+	
 	public BufferDescriptor(PageId pgid){
 		pinCount = 0;
 		dirty = false;
@@ -22,19 +23,18 @@ public class BufferDescriptor {
 	public void setPageNumber(PageId pageNumber) {
 		this.pageNumber = pageNumber;
 	}
+	
 	public PageId getPageNumber() {
 		return pageNumber;
 	}
 	
-	
 	public void setDirty(boolean dirty) {
 		this.dirty = dirty;
 	}
+	
 	public boolean isDirty() {
 		return dirty;
 	}
-	
-	
 	
 	public void setPinCount(int pinCount) {
 		this.pinCount = pinCount;
