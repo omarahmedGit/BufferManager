@@ -1,6 +1,7 @@
 package bufmgr;
 import java.io.IOException;
 import java.util.Hashtable;
+import java.util.PriorityQueue;
 
 import global.PageId;
 import global.SystemDefs;
@@ -16,8 +17,12 @@ public class bufmgr {
 	private Page[] pagesInThePool;
 	private String replacementPolicy;
 	
+	private PriorityQueue<RepalcementCandidate> candidates;
+	private int[] order;
+	
 	private BufferDescriptor[] bufferDescriptors; // Map the frame to the pages
 	private Hashtable<PageId, Integer> pageToFrameMap;
+	
 	
 	/**
 	* Create the BufMgr object
@@ -59,8 +64,6 @@ public class bufmgr {
 		if(pageToFrameMap.contains(pgid)){
 			int indexOfThePage;
 			BufferDescriptor currentDesc = bufferDescriptors[indexOfThePage=pageToFrameMap.get(pgid)];
-			// Don't FORGET to remove this page from the replacement container[FIFO - love/hate]
-			// if the pinCount = 0 before updating it.
 			currentDesc.updatePinCount(1); // pinCount++;
 			page = pagesInThePool[indexOfThePage];
 			
