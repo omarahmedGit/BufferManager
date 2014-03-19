@@ -3,12 +3,15 @@ import java.io.IOException;
 import java.util.Hashtable;
 import java.util.PriorityQueue;
 
+import sun.org.mozilla.javascript.internal.ast.ThrowStatement;
+
 import global.PageId;
 import global.SystemDefs;
 import diskmgr.DiskMgrException;
 import diskmgr.FileIOException;
 import diskmgr.InvalidPageNumberException;
 import diskmgr.InvalidRunSizeException;
+import diskmgr.OutOfSpaceException;
 import diskmgr.Page;
 	
 public class bufmgr {
@@ -68,24 +71,29 @@ public class bufmgr {
 			page = pagesInThePool[indexOfThePage];
 			
 		}else{
-			/*
-			 * 1. check if the pool is full.
-			 * 2. if the pool is full; choose the candidate to replace, then if it's Dirty, write it to the disk then remove; else if the pool is not full choose a frame and add necessaries.
-			 */
-			if(pageToFrameMap.size() == buffPool.length){ //  the pool is full
 			
-				
-			}else{
-				
-					try {
-						SystemDefs.JavabaseDB.read_page(pgid, page);
-					} catch (InvalidPageNumberException | FileIOException
-							| IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				
-			}
+			try {
+				SystemDefs.JavabaseDB.read_page(pgid, page);
+				int index = pageToFrameMap.get(candidateChoser.chooseCandidate()); // index of the frame
+				if(index==-1){
+					System.out.println("Exception: The Pool is FULL!");
+					pgid = null;
+					page = null;
+					return;
+				}
+				if(bufferDescriptors[index].isDirty()){
+					flushPage(pgid);
+					bufferDescriptors[index].setDirty(false);
+				}
+				buffPool[index] = page.getpage();
+				pagesInThePool[index] = page;
+				candidateChoser.remove(index);
+					
+			} catch (InvalidPageNumberException | FileIOException
+					| IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}	
 		}
 	}
 	/**
@@ -105,11 +113,12 @@ public class bufmgr {
 			int index = pageToFrameMap.get(pgid);
 			if(bufferDescriptors[index].getPinCount()==0){
 				// throw exception PageUnpinnedExcpetion
+				throw(PageUnpinnedExcpetion);
 			}
 			bufferDescriptors[index].updatePinCount(-1);
 			bufferDescriptors[index].setDirty(dirty);
 			if(bufferDescriptors[index].getPinCount()==0){
-				// Push it to be a candidate
+				candidateChoser.push(pgid);
 			}
 		}else{
 			System.out.println("the Buffer Pool Doesn't contain this page");
@@ -131,10 +140,20 @@ public class bufmgr {
 	*/
 	public PageId newPage(Page firstPage, int howmany) {
 		
-		if(buffPool.length == pageToFrameMap.size()){ // full
-			
+		PageId firstPageId = null;
+		try {
+			firstPageId = new PageId();
+			SystemDefs.JavabaseDB.allocate_page(firstPageId, howmany);
+			pinPage(firstPageId, firstPage, false, false);
+			if(firstPageId==null){
+				SystemDefs.JavabaseDB.deallocate_page(firstPageId, howmany);
+			}
+		} catch (OutOfSpaceException | InvalidRunSizeException
+				| InvalidPageNumberException | FileIOException
+				| DiskMgrException | IOException e) {
+			e.printStackTrace();
 		}
-		return null;
+		return firstPageId;
 	}
 	/**
 	* This method should be called to delete a page that is on disk.
