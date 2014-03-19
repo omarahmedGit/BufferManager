@@ -20,8 +20,8 @@ public class bufmgr {
 	private Page[] pagesInThePool;
 	private String replacementPolicy;
 	
-	private PriorityQueue<RepalcementCandidate> candidates;
-	private int[] order;
+	public PriorityQueue<RepalcementCandidate> candidates;
+	public int[] order;
 	
 	private BufferDescriptor[] bufferDescriptors; // Map the frame to the pages
 	private Hashtable<PageId, Integer> pageToFrameMap;
@@ -186,4 +186,10 @@ public class bufmgr {
 			}
 		
 	}
+	
+	public int getPinCount(int frame)
+	{
+		return bufferDescriptors[frame].getPinCount();
+	}
+	
 }
