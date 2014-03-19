@@ -15,6 +15,7 @@ public class bufmgr {
 	private byte[][] buffPool;
 	private Page[] pagesInThePool;
 	private String replacementPolicy;
+	
 	private BufferDescriptor[] bufferDescriptors; // Map the frame to the pages
 	private Hashtable<PageId, Integer> pageToFrameMap;
 	
