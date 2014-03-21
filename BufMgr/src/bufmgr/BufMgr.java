@@ -11,11 +11,12 @@ import diskmgr.InvalidRunSizeException;
 import diskmgr.OutOfSpaceException;
 import diskmgr.Page;
 	
-public class bufmgr {
+public class BufMgr {
 	
 	private byte[][] buffPool;
 	private Page[] pagesInThePool;
 	private String replacementPolicy;
+	private int numBufs;
 	
 	private BufferDescriptor[] bufferDescriptors; // Map the frame to the pages
 	private Hashtable<PageId, Integer> pageToFrameMap;
@@ -30,8 +31,8 @@ public class bufmgr {
 	* @param numbufs number of buffers in the buffer pool
 	* @param replaceArg name of the buffer replacement policy
 	*/
-	public bufmgr(int numBufs, String replaceArg) {
-		
+	public BufMgr(int numBufs, String replaceArg) {
+		this.numBufs = numBufs;
 		int page_size = global.GlobalConst.MINIBASE_PAGESIZE;
 		buffPool = new byte[numBufs][page_size];
 		replacementPolicy = replaceArg;
@@ -39,6 +40,17 @@ public class bufmgr {
 		pageToFrameMap = new Hashtable<>();
 		pagesInThePool = new Page[numBufs];
 	}
+
+	public int getNumBufs()
+	{
+		return numBufs;
+	}
+	
+	public int getPinCount(int frame)
+	{
+		return bufferDescriptors[frame].getPinCount();
+	}
+
 	/**
 	* Pin a page
 	* First check if this page is already in the buffer pool.
@@ -68,7 +80,7 @@ public class bufmgr {
 			
 			try {
 				SystemDefs.JavabaseDB.read_page(pgid, page);
-				int index = pageToFrameMap.get(candidateChoser.chooseCandidate()); // index of the frame
+				int index = 0;//pageToFrameMap.get(candidateChoser.chooseCandidate()); // index of the frame
 				if(index==-1){
 					System.out.println("Exception: The Pool is FULL!");
 					pgid = null;
@@ -81,7 +93,7 @@ public class bufmgr {
 				}
 				buffPool[index] = page.getpage();
 				pagesInThePool[index] = page;
-				candidateChoser.remove(index);
+				//candidateChoser.remove(index);
 					
 			} catch (InvalidPageNumberException | FileIOException
 					| IOException e) {
@@ -112,7 +124,7 @@ public class bufmgr {
 			bufferDescriptors[index].updatePinCount(-1);
 			bufferDescriptors[index].setDirty(dirty);
 			if(bufferDescriptors[index].getPinCount()==0){
-				candidateChoser.push(pgid);
+				//candidateChoser.push(pgid);
 			}
 		}else{
 			System.out.println("the Buffer Pool Doesn't contain this page");

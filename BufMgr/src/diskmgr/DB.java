@@ -809,13 +809,13 @@ public class DB implements GlobalConst {
 
   /**
    * short cut to access the pinPage function in bufmgr package.
-   * @see bufmgr.pinPage
+   * @see BufMgr.pinPage
    */
   private void pinPage(PageId pageno, Page page, boolean emptyPage)
     throws DiskMgrException {
 
     try {
-      SystemDefs.JavabaseBM.pinPage(pageno, page, emptyPage);
+      SystemDefs.JavabaseBM.pinPage(pageno, page, emptyPage,false);
     }
     catch (Exception e) {
       throw new DiskMgrException(e,"DB.java: pinPage() failed");
@@ -825,13 +825,13 @@ public class DB implements GlobalConst {
 
   /**
    * short cut to access the unpinPage function in bufmgr package.
-   * @see bufmgr.unpinPage
+   * @see BufMgr.unpinPage
    */
   private void unpinPage(PageId pageno, boolean dirty)
     throws DiskMgrException {
 
     try {
-      SystemDefs.JavabaseBM.unpinPage(pageno, dirty); 
+      SystemDefs.JavabaseBM.unpinPage(pageno, dirty, false); 
     }
     catch (Exception e) {
       throw new DiskMgrException(e,"DB.java: unpinPage() failed");
