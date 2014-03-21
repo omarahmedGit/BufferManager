@@ -2,9 +2,6 @@ package bufmgr;
 import java.io.IOException;
 import java.util.Hashtable;
 import java.util.PriorityQueue;
-
-import sun.org.mozilla.javascript.internal.ast.ThrowStatement;
-
 import global.PageId;
 import global.SystemDefs;
 import diskmgr.DiskMgrException;
@@ -19,9 +16,6 @@ public class bufmgr {
 	private byte[][] buffPool;
 	private Page[] pagesInThePool;
 	private String replacementPolicy;
-	
-	public PriorityQueue<RepalcementCandidate> candidates;
-	public int[] order;
 	
 	private BufferDescriptor[] bufferDescriptors; // Map the frame to the pages
 	private Hashtable<PageId, Integer> pageToFrameMap;
@@ -113,7 +107,7 @@ public class bufmgr {
 			int index = pageToFrameMap.get(pgid);
 			if(bufferDescriptors[index].getPinCount()==0){
 				// throw exception PageUnpinnedExcpetion
-				throw(PageUnpinnedExcpetion);
+				//throw(PageUnpinnedExcpetion);
 			}
 			bufferDescriptors[index].updatePinCount(-1);
 			bufferDescriptors[index].setDirty(dirty);
@@ -164,6 +158,9 @@ public class bufmgr {
 	*/
 	public void freePage(PageId pgid) {
 		try {
+			if(bufferDescriptors[pageToFrameMap.get(pgid)].getPinCount()>0){
+				// Throw Exception 
+			}
 			SystemDefs.JavabaseDB.deallocate_page(pgid);
 		} catch (InvalidRunSizeException | InvalidPageNumberException
 				| FileIOException | DiskMgrException | IOException e) {
@@ -186,10 +183,4 @@ public class bufmgr {
 			}
 		
 	}
-	
-	public int getPinCount(int frame)
-	{
-		return bufferDescriptors[frame].getPinCount();
-	}
-	
 }
